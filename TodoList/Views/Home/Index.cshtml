@@ -1,0 +1,80 @@
+﻿@model IEnumerable<TodoList.Models.Task>
+
+@{
+    ViewBag.Title = "Index";
+}
+<div class="jumbotron">
+    <h4>ToDoList</h4>
+</div>
+
+
+@Html.Partial("_Create", new TodoList.Models.Task())
+
+
+<table class="table table-striped container">
+    <tr>
+        <th class="col-md-1">
+            @Html.DisplayNameFor(model => model.Status)
+        </th>
+        <th class="col-md-9">
+            @Html.DisplayNameFor(model => model.Description)
+        </th>
+        <th class="col-md-2"></th>
+    </tr>
+
+    @foreach (var item in Model)
+    {
+        <tr>
+            <td class="col-md-1">
+                @Html.CheckBoxFor(modelItem => item.Status, new { id = item.Id, @class = "toggle", data_url = Url.Action("TaskComplete", "Home") })
+            </td>
+
+            <td id="description @item.Id" class="col-md-9">
+
+                @if (item.Status == true)
+                {
+                    <del>
+                        @item.Description
+                    </del>
+                }
+                else
+                {
+                    @Html.DisplayFor(modelItem => item.Description)
+                }
+
+            </td>
+            <td class="col-md-2">
+                @Html.ActionLink("Remove", "DeleteTask", new { id = item.Id })
+            </td>
+        </tr>
+    }
+</table>
+
+@section scripts {
+    <script>
+        $(function () {
+            $('.toggle').change(function () {
+                var self = $(this);
+                var url = self.data('url');
+                var id = self.attr('id');
+                var status = self.prop('checked');
+
+                $.ajax({
+                    url: url,
+                    data: { id: id, status: status },
+                    method: 'POST',
+                    cache: false,
+                    success: function (response) {
+                        console.log(response);
+                        var descriptionCurrent = document.getElementById("description " + id).innerHTML;
+                        var descriptionClean = descriptionCurrent.replace("<del>", "").replace("<\del>", "")
+                        if (status == true)
+                            document.getElementById("description " + id).innerHTML = "<del>" + descriptionCurrent + "</del>";
+                        else
+                            document.getElementById("description " + id).innerHTML = descriptionClean;
+                    }
+                });
+            });
+        });
+    </script>
+}
